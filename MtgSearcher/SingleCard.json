@@ -1,0 +1,42 @@
+{
+    "Ancestral Recall": {
+        "layout": "normal",
+        "name": "Ancestral Recall",
+        "manaCost": "{U}",
+        "cmc": 1,
+        "colors": [
+            "Blue"
+        ],
+        "type": "Instant",
+        "types": [
+            "Instant"
+        ],
+        "text": "Target player draws three cards.",
+        "imageName": "ancestral recall",
+        "printings": [
+            "LEA",
+            "LEB",
+            "2ED",
+            "CED",
+            "CEI",
+            "VMA"
+        ],
+        "legalities": [
+            {
+                "format": "Commander",
+                "legality": "Banned"
+            },
+            {
+                "format": "Legacy",
+                "legality": "Banned"
+            },
+            {
+                "format": "Vintage",
+                "legality": "Restricted"
+            }
+        ],
+        "colorIdentity": [
+            "U"
+        ]
+    }
+}
