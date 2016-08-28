@@ -4,7 +4,7 @@ module ResultHandler =
     open System
     open Scoring
     open MtgCard
-    open Indexing
+    open Persistence
 
     type pagination = { pageIdx: int; rows: int }
     type outputResult = { doc: Card; score: double; termHitCount: int; maxTerms: int; coordScore: double; debug: scoreDebug list }
@@ -14,14 +14,16 @@ module ResultHandler =
         |> List.skip (page.pageIdx * page.rows) 
         |> List.take page.rows
         //coordination.score and coordination.maxTerms should be guaranteed to have a value of at least 1 by this point 
-        |> List.map (fun r -> { doc = (getDoc r.cardId); score = r.score; termHitCount = r.coordination.termHitCount; maxTerms = r.coordination.maxTerms.Value; coordScore = r.coordination.score.Value; debug = r.debug })
+        |> List.map (fun r -> { doc = (getDocument r.cardId); score = r.score; termHitCount = r.coordination.termHitCount; maxTerms = r.coordination.maxTerms.Value; coordScore = r.coordination.score.Value; debug = r.debug })
         |> List.map (fun outRes -> (resultPrinter outRes; outRes)) 
         |> List.map (fun outRes -> (debugPrinter outRes; outRes))
 
+    //create a card utility module as we decouple this from being specific to cards
     let printCard (result:outputResult) =
         let r = result.doc
         printfn "%s     %s\r\n%s\r\n%s\r\n%s%s%s\r\n" r.Name r.ManaCost r.Type r.Text r.Power (if System.String.IsNullOrWhiteSpace(r.Power) && String.IsNullOrWhiteSpace(r.Toughness) then "NA/NA" else "/") r.Toughness
 
+    //create debug module specifically for this that this module would leverage
     let printDebug (result:outputResult) =
         printfn "%s - Total Score: %e\r\n{" result.doc.Name result.score
         printfn "\tTerm Hit Count: %d" result.termHitCount

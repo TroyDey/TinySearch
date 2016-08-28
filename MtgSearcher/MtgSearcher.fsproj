@@ -64,6 +64,8 @@
   </Target>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Persistence.fsi" />
+    <Compile Include="Persistence.fs" />
     <Compile Include="Indexing.fsi" />
     <Compile Include="Indexing.fs" />
     <Compile Include="Scoring.fsi" />

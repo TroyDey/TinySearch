@@ -14,5 +14,5 @@ let main argv =
     |> outputResults printCard printDebug { pageIdx = 0; rows = 10 } 
     |> ignore
 
-    Console.ReadKey() |> ignore    
+    Console.ReadKey() |> ignore
     0 // return an integer exit code
