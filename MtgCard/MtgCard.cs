@@ -23,6 +23,8 @@ namespace MtgCard
         public List<string> Types { get; set; }
         public string Text { get; set; }
         public string ImageName { get; set; }
+        public string Power { get; set; }
+        public string Toughness { get; set; }
         public List<string> Printings { get; set; }
         public List<LegalityObj> Legalities { get; set; }
         public List<string> ColorIdentity { get; set; }
