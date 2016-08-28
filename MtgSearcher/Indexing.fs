@@ -1,6 +1,6 @@
 ﻿namespace MtgSearcher
 
-module Indexer =
+module Indexing =
 
     open System.IO
     open System.Collections.Generic
@@ -10,8 +10,8 @@ module Indexer =
     open StackExchange.Redis
     open MtgCard
 
-    type localData = { term: string; mutable termFreq: int64; fieldLength: int64; locations: List<int64> }
-    type indexData = { mutable docFreq: int64; docs: Dictionary<string, localData> }
+    type localData = { mutable termFreq: int64; fieldLength: int64; locations: List<int64> }
+    type indexData = { term: string; mutable docFreq: int64; docs: Dictionary<string, localData> }
 
     //Operator to make the F# type inference happy with strings being used for Redis keys and values
     let inline (~~) (x:^a) : ^b = ((^a or ^b) : (static member op_Implicit: ^a -> ^b) x)
@@ -68,8 +68,8 @@ module Indexer =
                     let locref = new Dictionary<string,localData>()
                     let loclist = new List<int64>()
                     loclist.Add(idx)
-                    locref.Add(redisKey, { term = w; termFreq = 1L; fieldLength = textList.LongCount(); locations = loclist })
-                    cachedIndex.Add(w, { docFreq = 1L; docs = locref })
+                    locref.Add(redisKey, { termFreq = 1L; fieldLength = textList.LongCount(); locations = loclist })
+                    cachedIndex.Add(w, { term = w; docFreq = 1L; docs = locref })
                 else
                     let wordloc = cachedIndex.[w]
                     if wordloc.docs.ContainsKey(redisKey) then
@@ -80,7 +80,7 @@ module Indexer =
                         let loclist = new List<int64>()
                         loclist.Add(idx)
                         wordloc.docFreq <- wordloc.docFreq + 1L
-                        wordloc.docs.Add(redisKey, { term = w; termFreq = 1L; fieldLength = textList.LongCount(); locations = loclist })
+                        wordloc.docs.Add(redisKey, { termFreq = 1L; fieldLength = textList.LongCount(); locations = loclist })
                 idx <- idx + 1L
         cachedIndex.ToList()
 

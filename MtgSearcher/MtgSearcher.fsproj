@@ -64,11 +64,14 @@
   </Target>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Indexer.fsi" />
-    <Compile Include="Indexer.fs" />
+    <Compile Include="Indexing.fsi" />
+    <Compile Include="Indexing.fs" />
+    <Compile Include="Scoring.fsi" />
     <Compile Include="Scoring.fs" />
+    <Compile Include="QueryHandler.fsi" />
     <Compile Include="QueryHandler.fs" />
-    <Compile Include="ResultsHandler.fs" />
+    <Compile Include="ResultHandler.fsi" />
+    <Compile Include="ResultHandler.fs" />
     <Compile Include="Program.fs" />
     <None Include="App.config" />
     <Content Include="packages.config" />

@@ -1,15 +1,12 @@
-﻿module QueryHandler
+﻿namespace MtgSearcher
+module QueryHandler =
 
-open System.Linq
-open System.Collections.Generic
-open MtgSearcher.Indexer
-open Scoring
+    open Indexing
+    open Scoring
 
-let getSubIdx token =
-    if cachedIndex.ContainsKey(token) then
-        Some(new KeyValuePair<string, indexData>(token, cachedIndex.[token]))
-    else
-        None
-
-let query (q:string) =
-    q.Split(' ') |> Seq.toList |> List.map getSubIdx |> scoreResults
+    let query (q:string) =
+        q.Split(' ')
+        |> Seq.filter (fun t -> cachedIndex.ContainsKey(t))
+        |> Seq.fold (fun a t -> cachedIndex.[t]::a) []
+        |> Seq.toList
+        |> scoreResults
