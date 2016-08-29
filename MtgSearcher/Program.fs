@@ -7,18 +7,34 @@ open Utilities
 
 [<EntryPoint>]
 let main argv = 
-    printfn "%A" argv
     
     let reindex = (if argv.Length > 0 then argv.[0] else String.Empty)
 
     if reindex <> String.Empty && reindex.ToLowerInvariant() = "reindex" then
+        printf "Generating index...\r\n"
         ParseCardDataFromJsonFile "AllCards-x.json" |> generateIndex defaultAnalyzer aggregateCardText
+        printf "Index generation complete!\r\n\r\n"
     
-    query defaultAnalyzer "TAP    target    creature with flying"
-    |> outputResults printCard printDebug { pageIdx = 0; rows = 10 } 
-    |> List.map (fun outRes -> (printCard outRes; outRes)) 
-    |> List.map (fun outRes -> printDebug outRes)
-    |> ignore
+    printf "Welcome to TinySearch with Magic cards.\r\n"
+    printf "Input Magic card query and press enter.\r\n"
+    printf "Press escape to exit.\r\n\r\n"
 
-    Console.ReadKey() |> ignore
-    0 // return an integer exit code
+    let mutable allDone = false
+
+    while not allDone do
+        let firstKeyPress = Console.ReadKey().Key
+
+        if firstKeyPress = ConsoleKey.Escape then
+            allDone <- true
+        else
+            let queryText = (firstKeyPress.ToString()) + (Console.ReadLine())
+
+            printf "\r\n"
+
+            query defaultAnalyzer queryText
+            |> outputResults { pageIdx = 0; rows = 10 } 
+            |> List.map (fun outRes -> (printCard outRes; outRes)) 
+            |> List.map (fun outRes -> printDebug outRes)
+            |> ignore
+
+    0
