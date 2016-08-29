@@ -2,8 +2,10 @@
 
 module Indexing =
 
+    open System
     open System.Collections.Generic
     open System.Linq
+    open Newtonsoft.Json
     open Persistence
     open Analyzers
 
@@ -15,8 +17,21 @@ module Indexing =
     //Should still experiment with it
     let cachedIndex = new Dictionary<string, indexData>()
 
-    //Get from persistence and memoize instead of being mutable
-    let mutable totalDocuments = 0L
+    let mutable internalTotal = -1L
+
+    //Needs error handling
+    let totalDocuments () =
+        if internalTotal < 0L then
+            let docTotal = getDatum "meta:totalDocuments"
+            internalTotal <- int64(docTotal)
+            internalTotal
+        else
+            internalTotal
+
+    let deserializeIndexObject (idx:(string * string)) =
+        let idxData = JsonConvert.DeserializeObject<indexData>((snd idx))
+        cachedIndex.Add((fst idx), idxData)
+        idxData
 
     //Should convert this to a more elegant F# solution
     let buildInvertedIndex (indexAnalyzer:analyzer) (textAggregator:('a -> string)) docs =
@@ -58,7 +73,7 @@ module Indexing =
         |> List.ofSeq 
         |> persistDocuments "card"
         
-        totalDocuments <- docs.LongCount()
+        internalTotal <- docs.LongCount()
         
         persistDatum "meta" "totalDocuments" totalDocuments
         
@@ -67,3 +82,22 @@ module Indexing =
         |> buildInvertedIndex indexAnalyzer textAggregator 
         |> List.ofSeq 
         |> persistDocuments "word"
+
+    let isInIdx (key:string) =
+        keyExists key
+
+    let getIdxSegment (key:string) =
+        let redisKey = "word:" + key
+        let doc = getDocument redisKey
+
+        if doc = String.Empty then
+            None
+        else
+            Some(deserializeIndexObject (redisKey, doc))
+
+    let initalizeIndexInMemory () =
+        getDocuments "word:*"
+        |> List.map deserializeIndexObject
+        |> ignore
+
+        internalTotal <- cachedIndex.LongCount()

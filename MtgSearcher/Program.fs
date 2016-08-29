@@ -9,7 +9,10 @@ open Utilities
 let main argv = 
     printfn "%A" argv
     
-    ParseCardDataFromJsonFile "AllCards-x.json" |> generateIndex defaultAnalyzer aggregateCardText
+    let reindex = (if argv.Length > 0 then argv.[0] else String.Empty)
+
+    if reindex <> String.Empty && reindex.ToLowerInvariant() = "reindex" then
+        ParseCardDataFromJsonFile "AllCards-x.json" |> generateIndex defaultAnalyzer aggregateCardText
     
     query defaultAnalyzer "TAP    target    creature with flying"
     |> outputResults printCard printDebug { pageIdx = 0; rows = 10 } 

@@ -13,6 +13,10 @@ module Persistence =
     //This is expensive to create so cache it
     let conMux = ConnectionMultiplexer.Connect("localhost,allowAdmin=true");
 
+    let keyExists (documentId:string) =
+        let db = conMux.GetDatabase()
+        db.KeyExists(~~documentId)
+
     //Break strong type to the card type
     let getDocument (documentId:string) =
         let db = conMux.GetDatabase()
@@ -22,8 +26,15 @@ module Persistence =
         else
             doc.ToString()
 
+    let getDocuments (keyPattern:string) =
+        let server = conMux.GetServer("localhost:6379")
+        server.Keys(pattern = ~~keyPattern)
+        |> Seq.map (fun rk -> rk.ToString())
+        |> Seq.map (fun k -> (k, getDocument k))
+        |> Seq.toList
+
     let storeData (db:IDatabase) key data =
-        let serializedData = Newtonsoft.Json.JsonConvert.SerializeObject(data)
+        let serializedData = JsonConvert.SerializeObject(data)
         db.StringSet(~~key, ~~serializedData) |> ignore
 
     let persistDocuments prefix documents =
