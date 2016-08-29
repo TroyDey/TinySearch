@@ -1,7 +1,9 @@
 ﻿namespace MtgSearcher
 
 module QueryHandler = 
+    
+    open Analyzers
     open Indexing
     open Scoring
 
-    val query : string -> scoredResult list
+    val query : analyzer -> string -> scoredResult list

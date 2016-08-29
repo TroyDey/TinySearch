@@ -9,6 +9,7 @@ module Indexing =
     open Newtonsoft.Json.Serialization
     open MtgCard
     open Persistence
+    open Analyzers
 
     type localData = { mutable termFreq: int64; fieldLength: int64; locations: List<int64> }
     type indexData = { term: string; mutable docFreq: int64; docs: Dictionary<string, localData> }
@@ -28,21 +29,23 @@ module Indexing =
 
     let aggregateText (card:Card) =
             let sb = new StringBuilder(1000) //use string builder since we could be jamming alot of text together
-            sb.Append(card.Name).Append(" ").Append(System.String.Join(" ", if card.Colors = null then new List<string>() else card.Colors)).Append(" ").Append(card.ManaCost).Append(" ").Append(card.Type).Append(" ").Append(card.Text).ToString().Split(' ').ToList()
+            sb.Append(card.Name).Append(" ").Append(System.String.Join(" ", if card.Colors = null then new List<string>() else card.Colors)).Append(" ").Append(card.ManaCost).Append(" ").Append(card.Type).Append(" ").Append(card.Text).ToString()
 
     //Should convert this to a more elegant F# solution
-    let buildInvertedIndex cards =
+    let buildInvertedIndex (indexAnalyzer:analyzer) cards =
         //assume cards is already unique
         for (KeyValue(c,n)) in cards do
-            let textList = aggregateText n
+            let text = aggregateText n
+            let tokenStream = indexAnalyzer.tokenizer text
+            let filteredText = List.fold (fun a c -> (c a)) tokenStream indexAnalyzer.filters
             let redisKey = "card:" + c
             let mutable idx = 0L
-            for w in textList do
+            for w in filteredText do
                 if not(cachedIndex.ContainsKey(w)) then
                     let locref = new Dictionary<string,localData>()
                     let loclist = new List<int64>()
                     loclist.Add(idx)
-                    locref.Add(redisKey, { termFreq = 1L; fieldLength = textList.LongCount(); locations = loclist })
+                    locref.Add(redisKey, { termFreq = 1L; fieldLength = filteredText.LongCount(); locations = loclist })
                     cachedIndex.Add(w, { term = w; docFreq = 1L; docs = locref })
                 else
                     let wordloc = cachedIndex.[w]
@@ -54,16 +57,25 @@ module Indexing =
                         let loclist = new List<int64>()
                         loclist.Add(idx)
                         wordloc.docFreq <- wordloc.docFreq + 1L
-                        wordloc.docs.Add(redisKey, { termFreq = 1L; fieldLength = textList.LongCount(); locations = loclist })
+                        wordloc.docs.Add(redisKey, { termFreq = 1L; fieldLength = filteredText.LongCount(); locations = loclist })
                 idx <- idx + 1L
         cachedIndex.ToList()
 
-    let generateIndex (cards:Dictionary<string,Card>) =
+    let generateIndex (indexAnalyzer:analyzer) (cards:Dictionary<string,Card>) =
         //clear the existing index
         clearDatabase ()
+        
         //This is our stored data, we could have fields that are either stored or indexed or both
-        cards.ToList() |> List.ofSeq |> persistDocuments "card"
+        cards.ToList() 
+        |> List.ofSeq 
+        |> persistDocuments "card"
+        
         totalDocuments <- cards.LongCount()
+        
         persistDatum "meta" "totalDocuments" totalDocuments
+        
         //Create inverse index
-        buildInvertedIndex cards |> List.ofSeq |> persistDocuments "word"
+        cards 
+        |> buildInvertedIndex indexAnalyzer 
+        |> List.ofSeq 
+        |> persistDocuments "word"

@@ -66,6 +66,12 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Persistence.fsi" />
     <Compile Include="Persistence.fs" />
+    <Compile Include="Tokenizers.fsi" />
+    <Compile Include="Tokenizers.fs" />
+    <Compile Include="TokenFilters.fsi" />
+    <Compile Include="TokenFilters.fs" />
+    <Compile Include="Analyzers.fsi" />
+    <Compile Include="Analyzers.fs" />
     <Compile Include="Indexing.fsi" />
     <Compile Include="Indexing.fs" />
     <Compile Include="Scoring.fsi" />
