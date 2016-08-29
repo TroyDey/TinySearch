@@ -1,8 +1,8 @@
 ﻿open System
-open MtgSearcher.Indexing
-open MtgSearcher.QueryHandler
-open MtgSearcher.ResultHandler
-open MtgSearcher.Analyzers
+open TinySearch.Indexing
+open TinySearch.QueryHandler
+open TinySearch.ResultHandler
+open TinySearch.Analyzers
 open Utilities
 
 [<EntryPoint>]

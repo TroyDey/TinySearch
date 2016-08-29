@@ -5,16 +5,14 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>f5dc2a84-1b21-4da2-9f9b-f7e32a1eca74</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>MtgSearcher</RootNamespace>
-    <AssemblyName>MtgSearcher</AssemblyName>
+    <ProjectGuid>9b06b613-ff49-47e1-956c-9a10453e4009</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>TinySearch</RootNamespace>
+    <AssemblyName>TinySearch</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
-    <Name>MtgSearcher</Name>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Name>TinySearch</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,9 +22,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>bin\Debug\MtgSearcher.XML</DocumentationFile>
-    <Prefer32Bit>true</Prefer32Bit>
+    <DocumentationFile>bin\Debug\TinySearch.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -35,9 +31,7 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>bin\Release\MtgSearcher.XML</DocumentationFile>
-    <Prefer32Bit>true</Prefer32Bit>
+    <DocumentationFile>bin\Release\TinySearch.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
@@ -57,13 +51,24 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Utilities.fs" />
-    <Compile Include="Program.fs" />
-    <None Include="App.config" />
+    <Compile Include="Persistence.fsi" />
+    <Compile Include="Persistence.fs" />
+    <Compile Include="Tokenizers.fsi" />
+    <Compile Include="Tokenizers.fs" />
+    <Compile Include="TokenFilters.fsi" />
+    <Compile Include="TokenFilters.fs" />
+    <Compile Include="Analyzers.fsi" />
+    <Compile Include="Analyzers.fs" />
+    <Compile Include="Indexing.fsi" />
+    <Compile Include="Indexing.fs" />
+    <Compile Include="Scoring.fsi" />
+    <Compile Include="Scoring.fs" />
+    <Compile Include="QueryHandler.fsi" />
+    <Compile Include="QueryHandler.fs" />
+    <Compile Include="ResultHandler.fsi" />
+    <Compile Include="ResultHandler.fs" />
+    <None Include="Script.fsx" />
     <Content Include="packages.config" />
-    <None Include="AllCards-x.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -74,24 +79,13 @@
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="StackExchange.Redis">
+      <HintPath>..\packages\StackExchange.Redis.1.1.603\lib\net45\StackExchange.Redis.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Transactions" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MtgCard\MtgCard.csproj">
-      <Name>MtgCard</Name>
-      <Project>{302b0bfd-9aec-4ec2-a2b8-8ba46bf370ad}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\TinySearch\TinySearch.fsproj">
-      <Name>TinySearch</Name>
-      <Project>{9b06b613-ff49-47e1-956c-9a10453e4009}</Project>
-      <Private>True</Private>
-    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

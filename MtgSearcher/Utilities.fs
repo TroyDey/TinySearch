@@ -6,8 +6,8 @@ open System.Text
 open System.Collections.Generic
 open Newtonsoft.Json
 open MtgCard
-open MtgSearcher.Scoring
-open MtgSearcher.ResultHandler
+open TinySearch.Scoring
+open TinySearch.ResultHandler
 
 let aggregateCardText (card:Card) =
         let sb = new StringBuilder(1000) //use string builder since we could be jamming alot of text together

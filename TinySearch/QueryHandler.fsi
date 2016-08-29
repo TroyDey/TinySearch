@@ -1,4 +1,4 @@
-﻿namespace MtgSearcher
+﻿namespace TinySearch
 
 module QueryHandler = 
     

@@ -1,4 +1,4 @@
-﻿namespace MtgSearcher
+﻿namespace TinySearch
 
 module Scoring =
 
@@ -25,7 +25,7 @@ module Scoring =
 
     let updateDocScore term docFreq (acc:Map<string,scoredResult>) (cur:KeyValuePair<string,localData>) =
         let tf = (termFrequencyScore cur.Value)
-        let totalDocs = MtgSearcher.Indexing.totalDocuments
+        let totalDocs = TinySearch.Indexing.totalDocuments
         let idf = inverseDocumentFrequencyScore (double(totalDocs)) (double(docFreq))
         let tfIdf = tf * idf
         let debug = { term = term; tf = tf; idf = idf; tfIdf = tfIdf; baseTf = cur.Value.termFreq; totalDocs = totalDocs; docFreq = docFreq }
