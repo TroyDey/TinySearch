@@ -1,6 +1,7 @@
 ﻿namespace MtgSearcher
 
 module Tokenizers =
+
     open System
     open System.Linq
     open System.Collections.Generic

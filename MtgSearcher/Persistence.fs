@@ -1,10 +1,11 @@
 ﻿namespace MtgSearcher
 
 module Persistence =
+    
+    open System
     open System.Collections.Generic
     open StackExchange.Redis
     open Newtonsoft.Json
-    open MtgCard
 
     //Operator to make the F# type inference happy with strings being used for Redis keys and values
     let inline (~~) (x:^a) : ^b = ((^a or ^b) : (static member op_Implicit: ^a -> ^b) x)
@@ -15,8 +16,11 @@ module Persistence =
     //Break strong type to the card type
     let getDocument (documentId:string) =
         let db = conMux.GetDatabase()
-        //JsonConvert will blow up if the doc is not found
-        JsonConvert.DeserializeObject<Card>(db.StringGet(~~documentId).ToString())
+        let doc = db.StringGet(~~documentId)
+        if doc.IsNull then
+            String.Empty
+        else
+            doc.ToString()
 
     let storeData (db:IDatabase) key data =
         let serializedData = Newtonsoft.Json.JsonConvert.SerializeObject(data)

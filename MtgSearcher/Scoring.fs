@@ -1,4 +1,5 @@
 ﻿namespace MtgSearcher
+
 module Scoring =
 
     open System
@@ -7,7 +8,7 @@ module Scoring =
 
     type scoreDebug = {term: string; tf: double; idf: double; tfIdf: double; baseTf: int64; totalDocs: int64; docFreq: int64}
     type coordinationScore = {mutable termHitCount: int; mutable maxTerms: int option; mutable score: double option}
-    type scoredResult = {cardId: string; mutable score: double; mutable coordination: coordinationScore; mutable debug:scoreDebug list}
+    type scoredResult = {docId: string; mutable score: double; mutable coordination: coordinationScore; mutable debug:scoreDebug list}
 
     let updateScoreWithCoordinationFactor maxTerms scoredRes =
         let coordScore = double(scoredRes.coordination.termHitCount) / double(maxTerms)
@@ -36,7 +37,7 @@ module Scoring =
             scoredResult.coordination.termHitCount <- scoredResult.coordination.termHitCount + 1
             acc.Add (cur.Key, scoredResult)
         else
-            acc.Add (cur.Key, { cardId = cur.Key; score = tfIdf; coordination = { termHitCount = 1; maxTerms = None; score = None}; debug = [debug] })
+            acc.Add (cur.Key, { docId = cur.Key; score = tfIdf; coordination = { termHitCount = 1; maxTerms = None; score = None}; debug = [debug] })
 
     let calculateScore acc (cur:indexData) =
         let termUpdateDocScore = updateDocScore cur.term cur.docFreq

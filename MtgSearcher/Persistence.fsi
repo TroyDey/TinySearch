@@ -1,12 +1,10 @@
 ﻿namespace MtgSearcher
 
 module Persistence =
-    open System.Collections.Generic
-    open StackExchange.Redis
-    open Newtonsoft.Json
-    open MtgCard
 
-    val getDocument : string -> Card
+    open System.Collections.Generic
+
+    val getDocument : string -> string
     val persistDocuments : string -> KeyValuePair<string,'a> list -> unit
     val clearDatabase : unit -> unit
     val persistDatum : string -> string -> 'a -> unit

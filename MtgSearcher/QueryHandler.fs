@@ -1,4 +1,5 @@
 ﻿namespace MtgSearcher
+
 module QueryHandler =
 
     open Analyzers

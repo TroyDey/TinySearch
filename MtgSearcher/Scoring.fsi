@@ -1,4 +1,5 @@
 ﻿namespace MtgSearcher
+
 module Scoring =
 
     open System
@@ -7,7 +8,7 @@ module Scoring =
 
     type scoreDebug = {term: string; tf: double; idf: double; tfIdf: double; baseTf: int64; totalDocs: int64; docFreq: int64}
     type coordinationScore = {mutable termHitCount: int; mutable maxTerms: int option; mutable score: double option}
-    type scoredResult = {cardId: string; mutable score: double; mutable coordination: coordinationScore; mutable debug:scoreDebug list}
+    type scoredResult = {docId: string; mutable score: double; mutable coordination: coordinationScore; mutable debug:scoreDebug list}
 
     val scoreResults : indexData list -> scoredResult list
 

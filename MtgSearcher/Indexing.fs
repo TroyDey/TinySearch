@@ -2,12 +2,8 @@
 
 module Indexing =
 
-    open System.IO
     open System.Collections.Generic
-    open System.Text
     open System.Linq
-    open Newtonsoft.Json.Serialization
-    open MtgCard
     open Persistence
     open Analyzers
 
@@ -22,20 +18,11 @@ module Indexing =
     //Get from persistence and memoize instead of being mutable
     let mutable totalDocuments = 0L
 
-    let ParseCardDataFromJsonFile (fileName:string) =
-        use sr = new StreamReader(fileName)
-        let jsonStr = sr.ReadToEnd()
-        Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string,Card>>(jsonStr)
-
-    let aggregateText (card:Card) =
-            let sb = new StringBuilder(1000) //use string builder since we could be jamming alot of text together
-            sb.Append(card.Name).Append(" ").Append(System.String.Join(" ", if card.Colors = null then new List<string>() else card.Colors)).Append(" ").Append(card.ManaCost).Append(" ").Append(card.Type).Append(" ").Append(card.Text).ToString()
-
     //Should convert this to a more elegant F# solution
-    let buildInvertedIndex (indexAnalyzer:analyzer) cards =
+    let buildInvertedIndex (indexAnalyzer:analyzer) (textAggregator:('a -> string)) docs =
         //assume cards is already unique
-        for (KeyValue(c,n)) in cards do
-            let text = aggregateText n
+        for (KeyValue(c,n)) in docs do
+            let text = textAggregator n
             let tokenStream = indexAnalyzer.tokenizer text
             let filteredText = List.fold (fun a c -> (c a)) tokenStream indexAnalyzer.filters
             let redisKey = "card:" + c
@@ -61,21 +48,22 @@ module Indexing =
                 idx <- idx + 1L
         cachedIndex.ToList()
 
-    let generateIndex (indexAnalyzer:analyzer) (cards:Dictionary<string,Card>) =
+    //add the ability to index specific fields of a document separately instead of having to smash them all into one
+    let generateIndex (indexAnalyzer:analyzer) (textAggregator:('a -> string)) (docs:Dictionary<string,'a>) =
         //clear the existing index
         clearDatabase ()
         
         //This is our stored data, we could have fields that are either stored or indexed or both
-        cards.ToList() 
+        docs.ToList()
         |> List.ofSeq 
         |> persistDocuments "card"
         
-        totalDocuments <- cards.LongCount()
+        totalDocuments <- docs.LongCount()
         
         persistDatum "meta" "totalDocuments" totalDocuments
         
         //Create inverse index
-        cards 
-        |> buildInvertedIndex indexAnalyzer 
+        docs 
+        |> buildInvertedIndex indexAnalyzer textAggregator 
         |> List.ofSeq 
         |> persistDocuments "word"

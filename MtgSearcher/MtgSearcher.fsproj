@@ -80,6 +80,7 @@
     <Compile Include="QueryHandler.fs" />
     <Compile Include="ResultHandler.fsi" />
     <Compile Include="ResultHandler.fs" />
+    <Compile Include="Utilities.fs" />
     <Compile Include="Program.fs" />
     <None Include="App.config" />
     <Content Include="packages.config" />
