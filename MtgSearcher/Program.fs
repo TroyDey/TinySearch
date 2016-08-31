@@ -12,7 +12,7 @@ let main argv =
 
     if reindex <> String.Empty && reindex.ToLowerInvariant() = "reindex" then
         printf "Generating index...\r\n"
-        ParseCardDataFromJsonFile "AllCards-x.json" |> generateIndex englishPossesiveAnalyzer aggregateCardText
+        ParseCardDataFromJsonFile "AllCards-x.json" |> generateIndex allFiltersAnalyzer aggregateCardText
         printf "Index generation complete!\r\n\r\n"
     
     printf "Welcome to TinySearch with Magic cards.\r\n"
@@ -31,7 +31,7 @@ let main argv =
 
             printf "\r\n"
 
-            query englishPossesiveAnalyzer queryText
+            query allFiltersAnalyzer queryText
             |> outputResults { pageIdx = 0; rows = 10 } 
             |> List.map (fun outRes -> (printCard outRes; outRes)) 
             |> List.map (fun outRes -> printDebug outRes)

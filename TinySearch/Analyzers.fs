@@ -8,3 +8,5 @@ module Analyzers =
 
     let defaultAnalyzer = { tokenizer = whitespacetokenizer; filters = [lowerCaseFilter] }
     let englishPossesiveAnalyzer = { tokenizer = whitespacetokenizer; filters = [lowerCaseFilter; englishPossesiveFilter] }
+    let stopFilterAnalyzer = { tokenizer = whitespacetokenizer; filters = [lowerCaseFilter; stopFilterDefault] }
+    let allFiltersAnalyzer = { tokenizer = whitespacetokenizer; filters = [lowerCaseFilter; stopFilterDefault; englishPossesiveFilter] }

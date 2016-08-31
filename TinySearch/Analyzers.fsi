@@ -6,3 +6,5 @@ module Analyzers =
 
     val defaultAnalyzer : analyzer
     val englishPossesiveAnalyzer : analyzer
+    val stopFilterAnalyzer : analyzer
+    val allFiltersAnalyzer : analyzer
