@@ -7,3 +7,4 @@ module Analyzers =
     type analyzer = { tokenizer: (string -> string list); filters:(string list -> string list) list }
 
     let defaultAnalyzer = { tokenizer = whitespacetokenizer; filters = [lowerCaseFilter] }
+    let englishPossesiveAnalyzer = { tokenizer = whitespacetokenizer; filters = [lowerCaseFilter; englishPossesiveFilter] }
