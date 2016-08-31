@@ -22,6 +22,8 @@ let main argv =
     let mutable allDone = false
 
     while not allDone do
+        printf ">"
+
         let firstKeyPress = Console.ReadKey().Key
 
         if firstKeyPress = ConsoleKey.Escape then
