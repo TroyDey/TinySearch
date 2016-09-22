@@ -6,5 +6,5 @@ module Scoring =
     open System.Collections.Generic
     open SearchTypes
 
-    val scoreResults : indexData list -> scoredResult list
+    val scoreResults : parsedQuery list -> scoredResult list
 

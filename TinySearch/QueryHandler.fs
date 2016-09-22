@@ -7,19 +7,28 @@ module QueryHandler =
     open Scoring
     open SearchTypes
 
-    let getSubIndex subIdx token =
-        if cachedIndex.ContainsKey(token) then
-            Some(cachedIndex.[token])::subIdx
+    let getSubIndex token (fieldIndex: fieldIndex option) =
+        if fieldIndex.IsSome && fieldIndex.Value.ContainsKey(token) then
+            Some(fieldIndex.Value.[token])
         else
-            (getIdxSegment token)::subIdx
-            
+            None
 
-    let query (queryAnalyzer:analyzer) (q:string)  =
+    let getFieldIndex field =
+        if cachedIndex.ContainsKey(field) then
+            Some(cachedIndex.[field])
+        else
+            getIdxSegment field
+
+    let getIndexesForToken defaultFields token =
+        defaultFields 
+        |> List.map getFieldIndex 
+        |> List.map (getSubIndex token) 
+        |> List.filter (fun i -> i.IsSome) 
+        |> List.map (fun i -> i.Value)
+
+    let query (queryAnalyzer:analyzer) (defaultFields:string list) (q:string)  =
         let tokenizedQuery = queryAnalyzer.tokenizer q
-        queryAnalyzer.filters
-        |> List.fold (fun a c -> (c a)) tokenizedQuery
-        |> Seq.fold getSubIndex []
-        |> Seq.filter (fun si -> si.IsSome)
-        |> Seq.map (fun si -> si.Value)
-        |> Seq.toList
+        queryAnalyzer.filters 
+        |> List.fold (fun tokens filter -> filter tokens) tokenizedQuery
+        |> List.map (fun t -> { token = t; indexes = getIndexesForToken defaultFields t })
         |> scoreResults

@@ -6,4 +6,4 @@ module QueryHandler =
     open Scoring
     open SearchTypes
 
-    val query : analyzer -> string -> scoredResult list
+    val query : analyzer -> string list -> string -> scoredResult list
