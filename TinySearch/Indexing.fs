@@ -13,7 +13,7 @@ module Indexing =
     //Since this will be lookup heavy use the standard dictionary that has O(1) lookup
     //The F# Map uses a binary tree and therefore its lookup is O(log n) 
     //Should still experiment with it
-    let cachedIndex = new Dictionary<string, indexData>()
+    let cachedIndex = new index()
 
     let mutable internalTotal = -1L
 
@@ -27,42 +27,57 @@ module Indexing =
             internalTotal
 
     let deserializeIndexObject (idx:(string * string)) =
-        let idxData = JsonConvert.DeserializeObject<indexData>((snd idx))
+        let idxData = JsonConvert.DeserializeObject<fieldIndex>((snd idx))
         cachedIndex.Add((fst idx), idxData)
         idxData
 
-    //Should convert this to a more elegant F# solution
-    let buildInvertedIndex (indexAnalyzer:analyzer) (textAggregator:('a -> string)) docs =
-        //assume cards is already unique
-        for (KeyValue(c,n)) in docs do
-            let text = textAggregator n
-            let tokenStream = indexAnalyzer.tokenizer text
-            let filteredText = List.fold (fun a c -> (c a)) tokenStream indexAnalyzer.filters
-            let redisKey = "card:" + c
-            let mutable idx = 0L
-            for w in filteredText do
-                if not(cachedIndex.ContainsKey(w)) then
-                    let locref = new Dictionary<string,localData>()
-                    let loclist = new List<int64>()
-                    loclist.Add(idx)
-                    locref.Add(redisKey, { termFreq = 1L; fieldLength = filteredText.LongCount(); locations = loclist })
-                    cachedIndex.Add(w, { term = w; docFreq = 1L; docs = locref })
+    let updateFieldIndex filteredText cardName (fieldIndex: fieldIndex) =
+        let redisKey = "card:" + cardName
+        let mutable idx = 0L
+
+        for w in filteredText do
+            if not(fieldIndex.ContainsKey(w)) then
+                let locref = new Dictionary<string,localData>()
+                let loclist = new List<int64>()
+
+                loclist.Add(idx)
+                locref.Add(redisKey, { termFreq = 1L; fieldLength = filteredText.LongCount(); locations = loclist })
+                fieldIndex.Add(w, { term = w; docFreq = 1L; docs = locref })
+            else
+                let wordloc = fieldIndex.[w]
+                if wordloc.docs.ContainsKey(redisKey) then
+                    let doc = wordloc.docs.[redisKey]
+
+                    doc.locations.Add(idx)
+                    doc.termFreq <- doc.termFreq + 1L
                 else
-                    let wordloc = cachedIndex.[w]
-                    if wordloc.docs.ContainsKey(redisKey) then
-                        let doc = wordloc.docs.[redisKey]
-                        doc.locations.Add(idx)
-                        doc.termFreq <- doc.termFreq + 1L
-                    else
-                        let loclist = new List<int64>()
-                        loclist.Add(idx)
-                        wordloc.docFreq <- wordloc.docFreq + 1L
-                        wordloc.docs.Add(redisKey, { termFreq = 1L; fieldLength = filteredText.LongCount(); locations = loclist })
-                idx <- idx + 1L
+                    let loclist = new List<int64>()
+
+                    loclist.Add(idx)
+                    wordloc.docFreq <- wordloc.docFreq + 1L
+                    wordloc.docs.Add(redisKey, { termFreq = 1L; fieldLength = filteredText.LongCount(); locations = loclist })
+            idx <- idx + 1L
+        fieldIndex
+
+    //Should convert this to a more elegant F# solution
+    let buildInvertedIndex (indexAnalyzer:analyzer) (docParser:'a -> (string * string) list) docs =
+        //assume cards is already unique
+        for (KeyValue(cardName,card)) in docs do
+            let fields = docParser card
+
+            for f in fields do
+                let tokenStream = indexAnalyzer.tokenizer (snd f)
+                let filteredText = List.fold (fun a c -> (c a)) tokenStream indexAnalyzer.filters
+
+                if cachedIndex.ContainsKey((fst f)) then
+                    updateFieldIndex filteredText cardName cachedIndex.[(fst f)] |> ignore
+                else
+                    cachedIndex.[(fst f)] <- updateFieldIndex filteredText cardName (new fieldIndex())
+
         cachedIndex.ToList()
 
     //add the ability to index specific fields of a document separately instead of having to smash them all into one
-    let generateIndex (indexAnalyzer:analyzer) (textAggregator:('a -> string)) (docs:Dictionary<string,'a>) =
+    let generateIndex (indexAnalyzer:analyzer) (textAggregator:('a -> string)) (docParser:'a -> (string * string) list) (docs:Dictionary<string,'a>) =
         //clear the existing index
         clearDatabase ()
         
@@ -77,15 +92,15 @@ module Indexing =
         
         //Create inverse index
         docs 
-        |> buildInvertedIndex indexAnalyzer textAggregator 
+        |> buildInvertedIndex indexAnalyzer docParser
         |> List.ofSeq 
-        |> persistDocuments "word"
+        |> persistDocuments "fieldIndex"
 
     let isInIdx (key:string) =
         keyExists key
 
     let getIdxSegment (key:string) =
-        let redisKey = "word:" + key
+        let redisKey = "fieldIndex:" + key
         let doc = getDocument redisKey
 
         if doc = String.Empty then
@@ -94,7 +109,7 @@ module Indexing =
             Some(deserializeIndexObject (redisKey, doc))
 
     let initalizeIndexInMemory () =
-        getDocuments "word:*"
+        getDocuments "fieldIndex:*"
         |> List.map deserializeIndexObject
         |> ignore
 

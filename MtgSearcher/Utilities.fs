@@ -13,6 +13,9 @@ let aggregateCardText (card:Card) =
         let sb = new StringBuilder(1000) //use string builder since we could be jamming alot of text together
         sb.Append(card.Name).Append(" ").Append(String.Join(" ", if card.Colors = null then new List<string>() else card.Colors)).Append(" ").Append(card.ManaCost).Append(" ").Append(card.Type).Append(" ").Append(card.Text).ToString()
 
+let parseCard (card:Card) =
+    [("Name",card.Name); ("Colors",String.Join(" ", if card.Colors = null then new List<string>() else card.Colors)); ("ManaCost", card.ManaCost); ("Type", card.Type); ("Text", card.Text)]
+
 let ParseCardDataFromJsonFile (fileName:string) =
     use sr = new StreamReader(fileName)
     let jsonStr = sr.ReadToEnd()
@@ -32,3 +35,8 @@ let printDebug (result:outputResult) =
     printfn "\tCoordination Factor: %e\r\n" result.coordScore
     List.map (fun (sd:scoreDebug) -> printfn "\tterm: %s\r\n\ttf: %e\r\n\tidf: %e\r\n\ttfidf: %e\r\n\tbasetf: %d\r\n\ttotalDocs: %d\r\n\tdocFreq: %d\r\n" sd.term sd.tf sd.idf sd.tfIdf sd.baseTf sd.totalDocs sd.docFreq) result.debug |> ignore
     printfn "}\r\n"
+
+let crossproduct l1 l2 =
+    [ for el1 in l1 do
+        for el2 in l2 do
+            yield el1, el1 ]
