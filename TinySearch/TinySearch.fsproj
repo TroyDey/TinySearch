@@ -59,6 +59,7 @@
     <Compile Include="TokenFilters.fs" />
     <Compile Include="Analyzers.fsi" />
     <Compile Include="Analyzers.fs" />
+    <Compile Include="SearchTypes.fs" />
     <Compile Include="Indexing.fsi" />
     <Compile Include="Indexing.fs" />
     <Compile Include="Scoring.fsi" />

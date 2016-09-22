@@ -4,9 +4,7 @@ module Indexing =
 
     open System.Collections.Generic
     open Analyzers
-
-    type localData = { mutable termFreq: int64; fieldLength: int64; locations: List<int64> }
-    type indexData = { term: string; mutable docFreq: int64; docs: Dictionary<string, localData> }
+    open SearchTypes
 
     val generateIndex : analyzer -> ('a -> string) -> Dictionary<string,'a> -> unit
     val initalizeIndexInMemory : unit -> unit

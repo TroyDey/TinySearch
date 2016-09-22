@@ -5,6 +5,7 @@ module QueryHandler =
     open Analyzers
     open Indexing
     open Scoring
+    open SearchTypes
 
     let getSubIndex subIdx token =
         if cachedIndex.ContainsKey(token) then

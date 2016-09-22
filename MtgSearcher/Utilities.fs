@@ -6,7 +6,7 @@ open System.Text
 open System.Collections.Generic
 open Newtonsoft.Json
 open MtgCard
-open TinySearch.Scoring
+open TinySearch.SearchTypes
 open TinySearch.ResultHandler
 
 let aggregateCardText (card:Card) =

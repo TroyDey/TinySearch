@@ -8,9 +8,7 @@ module Indexing =
     open Newtonsoft.Json
     open Persistence
     open Analyzers
-
-    type localData = { mutable termFreq: int64; fieldLength: int64; locations: List<int64> }
-    type indexData = { term: string; mutable docFreq: int64; docs: Dictionary<string, localData> }
+    open SearchTypes
 
     //Since this will be lookup heavy use the standard dictionary that has O(1) lookup
     //The F# Map uses a binary tree and therefore its lookup is O(log n) 

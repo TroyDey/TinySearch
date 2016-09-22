@@ -2,11 +2,8 @@
 
 module ResultHandler =
 
-    open Scoring
+    open SearchTypes
     open Persistence
-
-    type pagination = { pageIdx: int; rows: int }
-    type outputResult = { doc: string; score: double; termHitCount: int; maxTerms: int; coordScore: double; debug: scoreDebug list }
 
     //just return card json string and debug info potentially take other transformers
     let outputResults (page:pagination) (results:scoredResult list) =
