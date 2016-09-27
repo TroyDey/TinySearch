@@ -33,7 +33,7 @@ let main argv =
 
             printf "\r\n"
 
-            query allFiltersAnalyzer queryText
+            query allFiltersAnalyzer ["Name"; "Colors"; "ManaCost"; "Type"; "Text"] queryText
             |> outputResults { pageIdx = 0; rows = 10 } 
             |> List.map (fun outRes -> (printCard outRes; outRes)) 
             |> List.map (fun outRes -> printDebug outRes)

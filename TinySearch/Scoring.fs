@@ -6,6 +6,8 @@ module Scoring =
     open System.Collections.Generic
     open SearchTypes
 
+    type internalScoredResult = {docId: string; mutable score: double; mutable debug:scoreDebug list}
+
     let updateScoreWithCoordinationFactor maxTerms scoredRes =
         let coordScore = double(scoredRes.coordination.termHitCount) / double(maxTerms)
         scoredRes.coordination.maxTerms <- Some(maxTerms)
@@ -19,7 +21,7 @@ module Scoring =
     let inverseDocumentFrequencyScore totalDocs docFreq =
         Math.Pow(1.0 + Math.Log10(totalDocs / (docFreq + 1.0)), 2.0)
 
-    let updateDocScore term docFreq (acc:Map<string,scoredResult>) (cur:KeyValuePair<string,localData>) =
+    let updateDocScore term docFreq (acc:Map<string,internalScoredResult>) (cur:KeyValuePair<string,localData>) =
         let tf = (termFrequencyScore cur.Value)
         let totalDocs = TinySearch.Indexing.totalDocuments ()
         let idf = inverseDocumentFrequencyScore (double(totalDocs)) (double(docFreq))
@@ -28,12 +30,12 @@ module Scoring =
 
         if acc.ContainsKey(cur.Key) then
             let scoredResult = acc.[cur.Key]
-            scoredResult.score <- scoredResult.score + tfIdf
+            if scoredResult.score < tfIdf then
+                scoredResult.score <- tfIdf
             scoredResult.debug <- debug::scoredResult.debug
-            scoredResult.coordination.termHitCount <- scoredResult.coordination.termHitCount + 1
             acc.Add (cur.Key, scoredResult)
         else
-            acc.Add (cur.Key, { docId = cur.Key; score = tfIdf; coordination = { termHitCount = 1; maxTerms = None; score = None}; debug = [debug] })
+            acc.Add (cur.Key, { docId = cur.Key; score = tfIdf; debug = [debug] })
 
     let calculateScore acc (cur:indexData) =
         let termUpdateDocScore = updateDocScore cur.term cur.docFreq
@@ -41,9 +43,28 @@ module Scoring =
         |> List.ofSeq
         |> List.fold termUpdateDocScore acc
 
-    let scoreResults subIndex =
-        List.fold calculateScore Map.empty subIndex
+    let scoreTerm (subIndex:parsedQuery) =
+        List.fold calculateScore Map.empty subIndex.indexes
+
+    let combineTermScores (acc:Map<string,scoredResult>) key cur =
+        if acc.ContainsKey(key) then
+            acc.[key].score <- acc.[key].score + cur.score
+            acc.[key].coordination.termHitCount <- acc.[key].coordination.termHitCount + 1
+            acc.[key].debug <- acc.[key].debug @ cur.debug
+            acc
+        else
+            acc.Add(key, { docId = key; score = cur.score; coordination = { termHitCount = 1; maxTerms = None; score = None}; debug = cur.debug })
+
+    let scoreResults (pquery:parsedQuery list) =
+        List.map scoreTerm pquery
+        |> List.fold (fun a c -> Map.fold combineTermScores a c) Map.empty
         |> Seq.map (fun kvp -> kvp.Value)
         |> Seq.toList
-        |> List.map (updateScoreWithCoordinationFactor subIndex.Length)
+        |> List.map (updateScoreWithCoordinationFactor pquery.Length)
         |> List.sortByDescending (fun x -> x.score)
+
+//        List.fold calculateScore Map.empty subIndex
+//        |> Seq.map (fun kvp -> kvp.Value)
+//        |> Seq.toList
+//        |> List.map (updateScoreWithCoordinationFactor subIndex.Length)
+//        |> List.sortByDescending (fun x -> x.score)

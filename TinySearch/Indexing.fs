@@ -66,13 +66,16 @@ module Indexing =
             let fields = docParser card
 
             for f in fields do
-                let tokenStream = indexAnalyzer.tokenizer (snd f)
-                let filteredText = List.fold (fun a c -> (c a)) tokenStream indexAnalyzer.filters
+                let fieldValue = (snd f)
 
-                if cachedIndex.ContainsKey((fst f)) then
-                    updateFieldIndex filteredText cardName cachedIndex.[(fst f)] |> ignore
-                else
-                    cachedIndex.[(fst f)] <- updateFieldIndex filteredText cardName (new fieldIndex())
+                if fieldValue <> null then
+                    let tokenStream = indexAnalyzer.tokenizer fieldValue
+                    let filteredText = List.fold (fun a c -> (c a)) tokenStream indexAnalyzer.filters
+
+                    if cachedIndex.ContainsKey((fst f)) then
+                        updateFieldIndex filteredText cardName cachedIndex.[(fst f)] |> ignore
+                    else
+                        cachedIndex.[(fst f)] <- updateFieldIndex filteredText cardName (new fieldIndex())
 
         cachedIndex.ToList()
 
