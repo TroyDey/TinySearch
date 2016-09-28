@@ -12,7 +12,7 @@ module SearchTypes =
     type coordinationScore = {mutable termHitCount: int; mutable maxTerms: int option; mutable score: double option}
     type scoredResult = {docId: string; mutable score: double; mutable coordination: coordinationScore; mutable debug:scoreDebug list}
 
-    type parsedQuery = { token: string; indexes: indexData list}
+    type parsedQuery = { token: string; indexes: indexData seq}
 
     type pagination = { pageIdx: int; rows: int }
     type outputResult = { doc: string; score: double; termHitCount: int; maxTerms: int; coordScore: double; debug: scoreDebug list }

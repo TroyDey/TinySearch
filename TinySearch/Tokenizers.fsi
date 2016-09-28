@@ -7,4 +7,4 @@ module Tokenizers =
     open System.Collections.Generic
     open System.Text.RegularExpressions
 
-    val whitespacetokenizer : string -> string list
+    val whitespacetokenizer : string -> string seq

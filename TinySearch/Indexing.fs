@@ -70,7 +70,7 @@ module Indexing =
 
                 if fieldValue <> null then
                     let tokenStream = indexAnalyzer.tokenizer fieldValue
-                    let filteredText = List.fold (fun a c -> (c a)) tokenStream indexAnalyzer.filters
+                    let filteredText = List.fold (fun a c -> (c a)) tokenStream (indexAnalyzer.filters |> List.ofSeq)
 
                     if cachedIndex.ContainsKey((fst f)) then
                         updateFieldIndex filteredText cardName cachedIndex.[(fst f)] |> ignore

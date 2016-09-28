@@ -44,7 +44,7 @@ module Scoring =
         |> List.fold termUpdateDocScore acc
 
     let scoreTerm (subIndex:parsedQuery) =
-        List.fold calculateScore Map.empty subIndex.indexes
+        List.fold calculateScore Map.empty (subIndex.indexes |> List.ofSeq)
 
     let combineTermScores (acc:Map<string,scoredResult>) key cur =
         if acc.ContainsKey(key) then
@@ -55,12 +55,14 @@ module Scoring =
         else
             acc.Add(key, { docId = key; score = cur.score; coordination = { termHitCount = 1; maxTerms = None; score = None}; debug = cur.debug })
 
-    let scoreResults (pquery:parsedQuery list) =
-        List.map scoreTerm pquery
+    let scoreResults (pquery:parsedQuery seq) =
+        let pquerylist = pquery |> List.ofSeq
+        Seq.map scoreTerm pquery
+        |> List.ofSeq
         |> List.fold (fun a c -> Map.fold combineTermScores a c) Map.empty
         |> Seq.map (fun kvp -> kvp.Value)
         |> Seq.toList
-        |> List.map (updateScoreWithCoordinationFactor pquery.Length)
+        |> List.map (updateScoreWithCoordinationFactor pquerylist.Length)
         |> List.sortByDescending (fun x -> x.score)
 
 //        List.fold calculateScore Map.empty subIndex

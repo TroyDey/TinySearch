@@ -12,14 +12,14 @@ module TokenFilters =
                                         "they"; "this"; "to"; "was"; "will"; "with"])
 
     let lowerCaseFilter tokenStream =
-        List.map (fun (token:string) -> token.ToLowerInvariant()) tokenStream
+        Seq.map (fun (token:string) -> token.ToLowerInvariant()) tokenStream
 
     //Note: this will also strip 's from contractions
     let englishPossesiveFilter tokenStream =
-        List.map (fun (token:string) -> if token.EndsWith("'s") || token.EndsWith("'S") then token.Substring(0, token.Length-2) else token) tokenStream
+        Seq.map (fun (token:string) -> if token.EndsWith("'s") || token.EndsWith("'S") then token.Substring(0, token.Length-2) else token) tokenStream
 
     let stopFilter (stopWords:HashSet<string>) tokenStream =
-        List.filter (fun (token:string) -> not (stopWords.Contains(token))) tokenStream
+        Seq.filter (fun (token:string) -> not (stopWords.Contains(token))) tokenStream
 
     let stopFilterDefault tokenStream =
         stopFilter stopWords tokenStream

@@ -2,7 +2,7 @@
 
 module Analyzers =
 
-    type analyzer = { tokenizer: (string -> string list); filters:(string list -> string list) list }
+    type analyzer = { tokenizer: (string -> string seq); filters:(string seq -> string seq) seq }
 
     val defaultAnalyzer : analyzer
     val englishPossesiveAnalyzer : analyzer

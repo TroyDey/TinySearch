@@ -8,5 +8,5 @@ module Tokenizers =
     open System.Text.RegularExpressions
 
     let whitespacetokenizer source =
-        Regex.Matches(source, "\S+").Cast<Match>() |> Seq.map (fun m -> m.Value) |> Seq.toList
+        Regex.Matches(source, "\S+").Cast<Match>() |> Seq.map (fun m -> m.Value)
 

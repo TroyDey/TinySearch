@@ -21,14 +21,14 @@ module QueryHandler =
 
     let getIndexesForToken defaultFields token =
         defaultFields 
-        |> List.map getFieldIndex 
-        |> List.map (getSubIndex token) 
-        |> List.filter (fun i -> i.IsSome) 
-        |> List.map (fun i -> i.Value)
+        |> Seq.map getFieldIndex 
+        |> Seq.map (getSubIndex token) 
+        |> Seq.filter (fun i -> i.IsSome) 
+        |> Seq.map (fun i -> i.Value)
 
-    let query (queryAnalyzer:analyzer) (defaultFields:string list) (q:string)  =
+    let query (queryAnalyzer:analyzer) (defaultFields:string seq) (q:string)  =
         let tokenizedQuery = queryAnalyzer.tokenizer q
         queryAnalyzer.filters 
-        |> List.fold (fun tokens filter -> filter tokens) tokenizedQuery
-        |> List.map (fun t -> { token = t; indexes = getIndexesForToken defaultFields t })
+        |> Seq.fold (fun tokens filter -> filter tokens) tokenizedQuery
+        |> Seq.map (fun t -> { token = t; indexes = getIndexesForToken defaultFields t })
         |> scoreResults
