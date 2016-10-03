@@ -35,8 +35,9 @@ let main argv =
 
             query allFiltersAnalyzer ["Name"; "Colors"; "ManaCost"; "Type"; "Text"] queryText
             |> outputResults { pageIdx = 0; rows = 10 } 
-            |> List.map (fun outRes -> (printCard outRes; outRes)) 
-            |> List.map (fun outRes -> printDebug outRes)
+            |> Seq.map (fun outRes -> (printCard outRes; outRes)) 
+            |> Seq.map (fun outRes -> printDebug outRes)
+            |> List.ofSeq //simple way to force the sequence to evaluate
             |> ignore
 
     0

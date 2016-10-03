@@ -22,9 +22,7 @@ module QueryHandler =
     let getIndexesForToken defaultFields token =
         defaultFields 
         |> Seq.map getFieldIndex 
-        |> Seq.map (getSubIndex token) 
-        |> Seq.filter (fun i -> i.IsSome) 
-        |> Seq.map (fun i -> i.Value)
+        |> Seq.choose (getSubIndex token)
 
     let query (queryAnalyzer:analyzer) (defaultFields:string seq) (q:string)  =
         let tokenizedQuery = queryAnalyzer.tokenizer q
