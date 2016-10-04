@@ -60,9 +60,3 @@ module Scoring =
         |> Seq.map (fun kvp -> kvp.Value)
         |> Seq.map (updateScoreWithCoordinationFactor (Seq.length pquery))
         |> Seq.sortByDescending (fun x -> x.score)
-
-//        List.fold calculateScore Map.empty subIndex
-//        |> Seq.map (fun kvp -> kvp.Value)
-//        |> Seq.toList
-//        |> List.map (updateScoreWithCoordinationFactor subIndex.Length)
-//        |> List.sortByDescending (fun x -> x.score)

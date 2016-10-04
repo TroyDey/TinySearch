@@ -7,24 +7,40 @@ module Persistence =
     open StackExchange.Redis
     open Newtonsoft.Json
 
+    open SearchTypes
+
     //Operator to make the F# type inference happy with strings being used for Redis keys and values
     let inline (~~) (x:^a) : ^b = ((^a or ^b) : (static member op_Implicit: ^a -> ^b) x)
 
     //This is expensive to create so cache it
     let conMux = ConnectionMultiplexer.Connect("localhost,allowAdmin=true");
 
+    let deserializeIndexObject (idx:(string * string)) =
+        JsonConvert.DeserializeObject<fieldIndex>((snd idx))
+
     let keyExists (documentId:string) =
         let db = conMux.GetDatabase()
         db.KeyExists(~~documentId)
 
-    //Break strong type to the card type
-    let getDocument (documentId:string) =
+    let getDocumentString documentId =
         let db = conMux.GetDatabase()
+        let key = "fieldIndex:" + documentId
         let doc = db.StringGet(~~documentId)
         if doc.IsNull then
             String.Empty
         else
             doc.ToString()
+
+    //Break strong type to the card type
+    let getDocument documentId =
+        let doc = getDocumentString documentId
+
+        if String.IsNullOrEmpty(doc) then
+            None
+        else
+            (documentId, doc)
+            |> deserializeIndexObject
+            |> Some
 
     let getDocuments (keyPattern:string) =
         let server = conMux.GetServer("localhost:6379")

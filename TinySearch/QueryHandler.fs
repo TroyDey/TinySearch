@@ -8,25 +8,17 @@ module QueryHandler =
     open SearchTypes
 
     let getSubIndex token (fieldIndex: fieldIndex option) =
-        if fieldIndex.IsSome && fieldIndex.Value.ContainsKey(token) then
-            Some(fieldIndex.Value.[token])
-        else
-            None
+        match fieldIndex with
+        | Some(idx) when idx.ContainsKey(token) -> Some(idx.[token])
+        | _ -> None
 
-    let getFieldIndex field =
-        if cachedIndex.ContainsKey(field) then
-            Some(cachedIndex.[field])
-        else
-            getIdxSegment field
-
-    let getIndexesForToken defaultFields token =
-        defaultFields 
-        |> Seq.map getFieldIndex 
+    let getIndexesForToken (defaultFields:string seq) (token:string) =
+        defaultFields
+        |> Seq.map getIdxSegment
         |> Seq.choose (getSubIndex token)
 
     let query (queryAnalyzer:analyzer) (defaultFields:string seq) (q:string)  =
-        let tokenizedQuery = queryAnalyzer.tokenizer q
-        queryAnalyzer.filters 
-        |> Seq.fold (fun tokens filter -> filter tokens) tokenizedQuery
+        (queryAnalyzer.tokenizer q, queryAnalyzer.filters)
+        ||> Seq.fold (fun tokens filter -> filter tokens)
         |> Seq.map (fun t -> { token = t; indexes = getIndexesForToken defaultFields t })
         |> scoreResults

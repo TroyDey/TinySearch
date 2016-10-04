@@ -18,4 +18,4 @@ module ResultHandler =
             |> Seq.skip skip
             |> Seq.truncate page.rows
             //coordination.score and coordination.maxTerms should be guaranteed to have a value of at least 1 by this point 
-            |> Seq.map (fun r -> { doc = (getDocument r.docId); score = r.score; termHitCount = r.coordination.termHitCount; maxTerms = r.coordination.maxTerms.Value; coordScore = r.coordination.score.Value; debug = r.debug })
+            |> Seq.map (fun r -> { doc = (getDocumentString r.docId); score = r.score; termHitCount = r.coordination.termHitCount; maxTerms = r.coordination.maxTerms.Value; coordScore = r.coordination.score.Value; debug = r.debug })

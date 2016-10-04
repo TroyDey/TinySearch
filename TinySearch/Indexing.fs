@@ -26,11 +26,6 @@ module Indexing =
         else
             internalTotal
 
-    let deserializeIndexObject (idx:(string * string)) =
-        let idxData = JsonConvert.DeserializeObject<fieldIndex>((snd idx))
-        cachedIndex.Add((fst idx), idxData)
-        idxData
-
     let updateFieldIndex filteredText cardName (fieldIndex: fieldIndex) =
         let redisKey = "card:" + cardName
         let mutable idx = 0L
@@ -102,18 +97,35 @@ module Indexing =
     let isInIdx (key:string) =
         keyExists key
 
-    let getIdxSegment (key:string) =
-        let redisKey = "fieldIndex:" + key
-        let doc = getDocument redisKey
+    let addIdxToCache key doc =
+        if not <| cachedIndex.ContainsKey(key) then
+            cachedIndex.Add(key, doc)
 
-        if doc = String.Empty then
-            None
+    let cacheIdx key doc =
+        match doc with
+        | Some(_) -> addIdxToCache key doc.Value; doc
+        | None -> doc
+
+    let getIdx key doc =
+        match doc with
+        | Some(_) -> doc
+        | None -> getDocument key
+
+    let getIdxFromCache key =
+        if cachedIndex.ContainsKey(key) then
+            Some(cachedIndex.[key])
         else
-            Some(deserializeIndexObject (redisKey, doc))
+            None
+
+    let getIdxSegment key =
+        key
+        |> getIdxFromCache
+        |> getIdx key
+        |> cacheIdx key
 
     let initalizeIndexInMemory () =
         getDocuments "fieldIndex:*"
-        |> List.map deserializeIndexObject
+        |> List.map (fun (key,doc) -> cacheIdx key doc)
         |> ignore
 
         internalTotal <- cachedIndex.LongCount()
